@@ -73,5 +73,5 @@ On the projec's root level create the file: *linker.ld*
 **Note:** this can be any name but must be the same in the *config.toml*
 
 The linker script defines the memory layout of the target device. Here is a basic example for an ARM Cortex-M target:
-[linker.ld](../linker.ld)
+[linker.ld](../linker.ld)  
 
