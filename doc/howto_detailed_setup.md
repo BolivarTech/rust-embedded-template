@@ -122,3 +122,16 @@ Generated Files:
   - vector_STM32G431.txt: Contains the vector table code for the startup_STM32G431.rs file.
   - device_STM32G431.x: Contains the linker script PROVIDE attribute.
 
+## Create Startup File
+The startup file is responsible for initializing the microcontroller and setting up the vector table. It typically includes the following:
+- Reset handler
+- Default exception handlers
+- Interrupt Service Routines (ISRs)
+- Initialization code for peripherals
+- Stack and heap initialization
+- Global variable initialization
+
+You can create a startup file manually or use a template from the `svd-vector-gen` output. The startup file should be named according to the microcontroller, e.g., `startup_STM32G431.rs`.  
+The file [startup_STM32G431.rs](../src/startup_stm32g431.rs) is an example of a startup file for the STM32G431 microcontroller. It includes the vector table and default handlers for exceptions and interrupts.
+
+
