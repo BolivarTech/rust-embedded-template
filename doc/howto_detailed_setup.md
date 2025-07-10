@@ -13,15 +13,31 @@ For installation instructions, see [Rust Toolchain Install Guide](https://www.ru
   ```
 ## Read ELF file content
 
-To read the content of an ELF file, you can use the `cargo readobj` command or `cargo objdump` command. These commands will help you inspect the ELF file's headers and sections.
+To read the content of an ELF file, you can use the `cargo readobj` command or `cargo objdump` command.
+These commands will help you inspect the ELF file's headers and sections.
+
+```bash
+cargo objdump -- -h <ELF_FILE>
+```
+
 
 ```bash
 cargo readobj -- -h <ELF_FILE>
 cargo readobj -- -S <ELF_FILE>
 ```
 
+Print all sections and their details:
 ```bash
-cargo objdump -- -h <ELF_FILE>
+cargo readobj -- -all <ELF_FILE>
+```
+
+Print specific section details, for example, the `.data` section:
+
+```bash
+cargo readobj -- -x .text <ELF_FILE>
+cargo readobj -- -x .rodata <ELF_FILE>
+cargo readobj -- -x .data <ELF_FILE>
+cargo readobj -- -x .bss <ELF_FILE>
 ```
 
 ## ELF (Executable and Linkable Format) File Structure
@@ -74,4 +90,35 @@ On the projec's root level create the file: *linker.ld*
 
 The linker script defines the memory layout of the target device. Here is a basic example for an ARM Cortex-M target:
 [linker.ld](../linker.ld)  
+
+## Create Vector Table
+
+One way to create a vector table is to use the `svd-vector-gen` crate; this tool scans the current directory for
+ARM Cortex-M compatible SVD files and automatically generates:  
+
+- Vector Table File (vector_<mcu>.txt):
+  - Contains the vector table for the specified microcontroller with system exceptions and interrupt handlers.
+  - Format: A static VECTOR_TABLE Rust array with Option<unsafe fn()> entries for each vector, including system handlers and IRQs.
+- Device-Specific Linker Script (device_<mcu>.x):
+  - Defines PROVIDE entries for all interrupts as:
+  - PROVIDE(<IRQ_NAME> = default_handler); 
+
+This facilitates linking during firmware development.
+
+### Install svd-vector-gen
+
+```bash
+cargo install svd-vector-gen
+```
+### Generate Vector Table
+Ensure that the directory contains valid SVD files.
+```bash
+svd-vector-gen 
+```
+### Generate Vector Table for Specific MCU
+For example on the STM32G431.svd:
+
+Generated Files:
+  - vector_STM32G431.txt: Contains the vector table code for the startup_STM32G431.rs file.
+  - device_STM32G431.x: Contains the linker script PROVIDE attribute.
 

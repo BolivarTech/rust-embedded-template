@@ -1,6 +1,9 @@
 [build]
 target = "thumbv7em-none-eabihf"
 
+[unstable]
+build-std = ["core"]
+
 [target.thumbv7em-none-eabihf]
 #linker = "arm-none-eabi-ld"  # Uncomment if you want to use a custom linker
 rustflags = [
