@@ -3,11 +3,22 @@ name = "Rust_Embedded_Template"
 version = "0.1.0"
 edition = "2021"
 
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
 
 [dependencies]
+defmt = "1.0"
+defmt-rtt = "1.0"
+panic-probe = { version = "1.0", features = ["print-defmt"] }
 
+
+[profile.gdb]
+inherits = "dev"
+debug = 2
+debug-assertions = true
+overflow-checks = true
+opt-level = 0
+
+[profile.release]
+debug = 0
+debug-assertions = false
+opt-level = "z"
+lto = true

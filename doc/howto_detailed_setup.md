@@ -134,4 +134,50 @@ The startup file is responsible for initializing the microcontroller and setting
 You can create a startup file manually or use a template from the `svd-vector-gen` output. The startup file should be named according to the microcontroller, e.g., `startup_STM32G431.rs`.  
 The file [startup_STM32G431.rs](../src/startup_stm32g431.rs) is an example of a startup file for the STM32G431 microcontroller. It includes the vector table and default handlers for exceptions and interrupts.
 
+## Setup Cargo Embedded Tools
+
+To set up the embedded tools, you can use the `probe-rs-tools` package, which provides tools for working with embedded devices.
+
+```bash
+cargo install probe-rs-tools --locked
+```
+
+To get the list of available chips, you can use the following command:
+
+```bash
+probe-rs chip list | grep -i <CHIP_NAME>
+```
+
+or in PowerShell:
+
+```powershell
+probe-rs chip list | Select-String -Pattern "<CHIP_NAME>"
+```
+### Flash the Firmware
+
+To flash the firmware to the target device, you can use the `probe-rs` command-line tool. Make sure your device is connected and recognized by the system.
+
+```bash
+cargo falsh --chip <CHIP_NAME>
+```
+You can also use the `probe-rs` command directly:
+
+```bash
+probe-rs flash --chip <CHIP_NAME> --file <FIRMWARE_FILE>
+```
+
+In the file ./.cargo/config.toml, you can specify the chip and other options for flashing:
+
+In the section `[target.thumbv7em-none-eabihf]`, you can add the `runner` option to specify the command to run after flashing:
+```toml
+runner = "probe-rs run --chip STM32G431R8"
+```
+
+On this way, you can run the firmware directly after flashing it to the device.
+
+```bash
+cargo run
+```
+
+## Debugging with GDB
 

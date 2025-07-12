@@ -28,25 +28,38 @@ extern "C" fn NMI_Handler() { loop {} }
 extern "C" fn Reset_Handler() {
     unsafe {
         // Copy the data segment from flash to RAM
-        let src_flash = ptr::addr_of!(_sidata);
-        let dst_ram = ptr::addr_of_mut!(_sdata);
+        let mut src_flash = ptr::addr_of!(_sidata);
+        let mut dst_ram = ptr::addr_of_mut!(_sdata);
         let end = ptr::addr_of_mut!(_edata);
 
-        for i in 0..(end as usize - dst_ram as usize) / core::mem::size_of::<u32>() {
-            *dst_ram.add(i) = *src_flash.add(i);
+        while dst_ram < end {
+            *dst_ram = *src_flash;
+            dst_ram =  dst_ram.add(1);
+            src_flash = src_flash.add(1);
         }
+        /*for i in 0..(end as usize - dst_ram as usize) / core::mem::size_of::<u32>() {
+            *dst_ram.add(i) = *src_flash.add(i);
+        }*/
 
         // Zero initialize the .bss section
-        let bss_start = ptr::addr_of_mut!(_sbss);
+        let mut bss_start = ptr::addr_of_mut!(_sbss);
         let bss_end = ptr::addr_of_mut!(_ebss);
-        for i in 0..(bss_end as usize - bss_start as usize) / core::mem::size_of::<u32>() {
+        while bss_start < bss_end {
+            *bss_start = 0;
+            bss_start = bss_start.add(1);
+        }
+/*        for i in 0..(bss_end as usize - bss_start as usize) / core::mem::size_of::<u32>() {
             *bss_start.add(i) = 0;
-        }
+        }  */
         // Fill the unused RAM with a zero value
-        let fill_end = ptr::addr_of_mut!(__fill_end__);
-        for i in 0..(fill_end as usize - bss_end as usize) / core::mem::size_of::<u32>() {
+/*        let fill_end = ptr::addr_of_mut!(__fill_end__);
+        while bss_end < fill_end {
+            *bss_end = 0;
+            bss_end = bss_end.add(1);
+        } */
+/*        for i in 0..(fill_end as usize - bss_end as usize) / core::mem::size_of::<u32>() {
             *bss_end.add(i) = 0;
-        }
+        } */
     }
     crate::main(); // Call the main function defined in main.rs
 }
