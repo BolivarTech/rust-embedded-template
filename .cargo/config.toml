@@ -14,11 +14,11 @@ rustflags = [
     "-C", "link-arg=-Map=output.map", # Map file for debugging
     "-C", "link-arg=-L./lib", # Additional library path
     # Add debug info
-    "-C", "debuginfo=2"
+    # "-C", "debuginfo=2"
 ]
 #runner = "probe-rs run --chip STM32G431R8"   # Block device runner becuase it goes to Debugger Console
 #runner = "probe-rs download --chip STM32G431R8" # Just download the binary without running, J-link GDB server can be used for debugging
-runner = "python runner.py"  # Custom runner script for building, flashing and running
+runner = "python flasher.py --chip STM32G431R8"  # Custom runner script for building, flashing and running
 
 [env]
-RUST_BACKTRACE = "1"
+RUST_BACKTRACE = "1" # Enable backtraces for better error reporting

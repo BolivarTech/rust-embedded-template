@@ -158,7 +158,7 @@ probe-rs chip list | Select-String -Pattern "<CHIP_NAME>"
 To flash the firmware to the target device, you can use the `probe-rs` command-line tool. Make sure your device is connected and recognized by the system.
 
 ```bash
-cargo falsh --chip <CHIP_NAME>
+cargo flash --chip <CHIP_NAME>
 ```
 You can also use the `probe-rs` command directly:
 
@@ -179,5 +179,35 @@ On this way, you can run the firmware directly after flashing it to the device.
 cargo run
 ```
 
+#### Using Custoimized Cargo run
+
+You can customize the `cargo run` command to include additional options for flashing and running the firmware. For example, you can create a custom script or use the `cargo run` command with specific flags.
+
+```toml
+runner = "python flasher.py --chip STM32G431R8"  # Custom runner script for building, flashing and running
+```
+
+This allows you to have more control over the build and flash process, and you can include additional logic in the `runner.py` script to handle different scenarios.
+
+The `flasher.py` script receive the path to the firmware file as an argument and can be used to build, flash, and run the firmware on the target device.
+
+
 ## Debugging with GDB
+
+Debugging embedded firmware can be done using GDB (GNU Debugger) with the help of `probe-rs` or other GDB servers
+compatible with embedded devices.
+
+This depends on the used IDE; for example, in Visual Studio Code, you can use the `CodeLLDB` extension or `Cortex-Debug`
+extension for debugging embedded applications.
+
+On JetBrains IDEs, you can use the `Embedded GDB Server` plugin in Clion, which provides support for debugging embedded
+applications.
+
+**Note:** At the moment of this writing, JetBrain RustRover does not support the `Embedded GDB Server`.
+
+To debug the firmware using GDB, you need a GDB server running. First, ensure that you have GDB installed and configured
+for your target architecture; and the IDE configured to use the GDB server.
+
+For example, you can use the `probe-rs` GDB server to debug the firmware on Visual Studio Code as explained in the 
+[probe-rs Debuggin documentation](https://probe.rs/docs/tools/debugger/).
 

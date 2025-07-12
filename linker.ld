@@ -111,7 +111,8 @@ SECTIONS
         /* Starting from BSS' end, fill the rest with zeros */
         . = ALIGN(4);
         __fill_start__ = .;
-        . = ORIGIN(RAM) + LENGTH(RAM);
+        . = ORIGIN(RAM) + LENGTH(RAM) - _min_stack_size;
+        . = ALIGN(4);
         __fill_end__ = .;
     } > RAM
 

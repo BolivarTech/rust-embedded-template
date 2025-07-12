@@ -6,6 +6,7 @@ extern "C"  {
     static mut _edata: u32; /* End address for the RAM .data section. Defined in linker script */
     static mut _sbss: u32; /* Start address for the RAM .bss section. Defined in linker script */
     static mut _ebss: u32; /* End address for the RAM .bss section. Defined in linker script */
+    static mut __fill_start__: u32; /* Start address for the fill section. Defined in linker script */
     static mut __fill_end__: u32; /* End address for the fill section. Defined in linker script */
 }
 
@@ -37,9 +38,6 @@ extern "C" fn Reset_Handler() {
             dst_ram =  dst_ram.add(1);
             src_flash = src_flash.add(1);
         }
-        /*for i in 0..(end as usize - dst_ram as usize) / core::mem::size_of::<u32>() {
-            *dst_ram.add(i) = *src_flash.add(i);
-        }*/
 
         // Zero initialize the .bss section
         let mut bss_start = ptr::addr_of_mut!(_sbss);
@@ -48,18 +46,15 @@ extern "C" fn Reset_Handler() {
             *bss_start = 0;
             bss_start = bss_start.add(1);
         }
-/*        for i in 0..(bss_end as usize - bss_start as usize) / core::mem::size_of::<u32>() {
-            *bss_start.add(i) = 0;
-        }  */
+
         // Fill the unused RAM with a zero value
-/*        let fill_end = ptr::addr_of_mut!(__fill_end__);
-        while bss_end < fill_end {
-            *bss_end = 0;
-            bss_end = bss_end.add(1);
-        } */
-/*        for i in 0..(fill_end as usize - bss_end as usize) / core::mem::size_of::<u32>() {
-            *bss_end.add(i) = 0;
-        } */
+        let mut fill_start = ptr::addr_of_mut!(__fill_start__);
+        let fill_end = ptr::addr_of_mut!(__fill_end__);
+        while fill_start < fill_end {
+            *fill_start = 0;
+            fill_start = fill_start.add(1);
+        }
+
     }
     crate::main(); // Call the main function defined in main.rs
 }
