@@ -5,12 +5,12 @@ starting point for bare-metal or embedded development without the Rust standard 
 
 ## Directory and Files Structures
 
-├── cpp_src/             # Optional C/C++ source files (if needed)  
-├── src/                 # Rust source files  
-│   └── main.rs          # Main entry point with custom _start function and panic handler  
-├── Cargo.toml           # Project configuration and dependencies  
-├── README.md            # This file  
-└── LICENSE              # MIT License file  
+├── cpp_src/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Optional C/C++ source files (if needed)  
+├── src/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Rust source files  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── main.rs&nbsp;&nbsp;&nbsp;&nbsp;# Main entry point with custom _start function and panic handler  
+├── Cargo.toml&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Project configuration and dependencies  
+├── README.md&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# This file  
+└── LICENSE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# MIT License file  
 
 ## Features
 
