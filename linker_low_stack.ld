@@ -2,6 +2,16 @@
  * Linker script for STM32F303 microcontroller
  * This script defines memory regions and sections for the STM32F303 device.
  * It specifies where code, data, and other sections should be placed in memory.
+ *
+ * This script is designed to define the memory layout for a low stack configuration,
+ * where the stack is placed at the lower part of RAM and the heap is on the top.
+ *
+ * The advantage of this configuration is that in case of stack overflow or heap
+ * exhaustion, the application will crash immediately and not data corruption will occur.
+ *
+ * Author: Julian Bolivar
+ * Date: 2025-07-12
+ * Version: 1.0.0
  */
 
 /* Define the entry point for the program */
@@ -18,13 +28,15 @@ MEMORY
 }
 
 /* Stack region at the top of RAM */
-_start_of_stack = ORIGIN(RAM) + LENGTH(RAM);
-_min_stack_size = 0x400;  /* Fixed stack size in bytes, use _min_ for convention */
+_min_stack_size = 0x800;  /* Fixed stack size in bytes, use _min_ for convention */
+_start_of_stack = ORIGIN(RAM) + _min_stack_size;
+_end_of_stack = ORIGIN(RAM);
+
 
 /* Heap region just below the stack */
 _min_heap_size =  0x400;  /* Fixed heap size in bytes, use _min_ for convention */
-_heap_start = ORIGIN(RAM) + LENGTH(RAM) - _min_stack_size - _min_heap_size;
-_heap_end   = ORIGIN(RAM) + LENGTH(RAM) - _min_stack_size;
+_heap_start = ORIGIN(RAM) + LENGTH(RAM) - _min_heap_size;
+_heap_end   = ORIGIN(RAM) + LENGTH(RAM);
 
 /*
  * SECTIONS
@@ -57,29 +69,39 @@ SECTIONS
             from the object files and libraries. */
         *(.text)
         *(.text*)
-         . = ALIGN(4);
+        . = ALIGN(4);
     } > FLASH
 
 
   /* Constant data will go into FLASH */
    .rodata :
    {
-         . = ALIGN(4);
+        . = ALIGN(4);
         *(.rodata)
         *(.rodata*)
-         . = ALIGN(4);
+        . = ALIGN(4);
    } > FLASH
 
+  /* Define the stack at the top of RAM */
+  .stack (NOLOAD):
+  {
+        /* This section is used to define the stack region */
+        . = _end_of_stack;
+        . = ALIGN(4);
+        . = . + _min_stack_size;
+        _start_of_stack = .;
+  } > RAM
 
    /* Initialized data will be in FLASH and it will also be in RAM during runtime*/
    .data :
    {
+        // This section is used to define the initialized data
         _sidata = LOADADDR(.data); /* This returns the FLASH Load Memory Address (LMA) */
-         . = ALIGN(4);
+        . = ALIGN(4);
         _sdata = .; /* start of data section in RAM Virtual Memory Address (VMA) */
         *(.data)
         *(.data*)
-         . = ALIGN(4);
+        . = ALIGN(4);
         _edata = .;
    } > RAM AT> FLASH
 
@@ -87,34 +109,24 @@ SECTIONS
    /* un-initialized data will be RAM */
    .bss :
    {
-         . = ALIGN(4);
+        . = ALIGN(4);
         _sbss = .;  /* start of bss section in RAM (VMA) */
         *(.bss)
         *(.bss*)
-         . = ALIGN(4);
+        . = ALIGN(4);
         _ebss = .;
    } > RAM
 
-   /* If the linker script can fit this section in RAM, it will throw an error. */
-   .ram_usage_check :
-   {
-      . = ALIGN(8);
-      . = . + _min_stack_size;
-      . = . + _min_heap_size;
-      . = ALIGN(8);
-      _eram_usage_check = .; /* end of RAM usage check section */
-   } > RAM
-
-    /* Fill remain RAM with zero */
-    .fill_ram :
-    {
-        /* Starting from BSS' end, fill the rest with zeros */
+  /* Define the start of the heap */
+  .heap (NOLOAD):
+  {
+        /* This section is used to define the heap region */
         . = ALIGN(4);
-        __fill_start__ = .;
-        . = ORIGIN(RAM) + LENGTH(RAM) - _min_stack_size;
-        . = ALIGN(4);
-        __fill_end__ = .;
-    } > RAM
+        _heap_start = .;
+        __fill_start__ = _heap_start;
+        . = _heap_end;
+        __fill_end__ = _heap_end;
+  } > RAM
 
 }
 
