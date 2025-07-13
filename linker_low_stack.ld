@@ -22,15 +22,18 @@ MEMORY
 {
     FLASH (rx)    : ORIGIN = 0x08000000, LENGTH = 128K
     RAM (rwx)     : ORIGIN = 0x20000000, LENGTH = 22K
-  /*  EEPROM (rwx)  : ORIGIN = 0x08080000, LENGTH = 4K  */
+    /*  EEPROM (rwx)  : ORIGIN = 0x08080000, LENGTH = 4K  */
     CCMRAM (rwx)  : ORIGIN = 0x10000000, LENGTH = 10K
-  /*  BATTRAM (rw)  : ORIGIN = 0x40024000, LENGTH =    4K       */
+    /*  BATTRAM (rw)  : ORIGIN = 0x40024000, LENGTH =    4K       */
 }
 
 /* Stack region at the top of RAM */
+_stack_guard_size = 0x40;
 _min_stack_size = 0x800;  /* Fixed stack size in bytes, use _min_ for convention */
+_stack_guard = ORIGIN(RAM);
+_stack_min = _stack_guard + _stack_guard_size; /* Reserve 64 bytes for overflow detection */
 _start_of_stack = ORIGIN(RAM) + _min_stack_size;
-_end_of_stack = ORIGIN(RAM);
+_end_of_stack = _stack_min;
 
 
 /* Heap region just below the stack */
@@ -50,12 +53,12 @@ SECTIONS
     1. Defines where each program section is placed in the microcontroller's memory.
 
     2. The linker assigns addresses based on the SECTIONS command,
-         creating an ELF file with exact memory locations.
+        creating an ELF file with exact memory locations.
         For example , if FLASH starts at 0x08000000 and the .text section is placed in FLASH,
         the linker will assign address starting frm 0x08000000 for the .text section.
 
     3. The ELF file guides the programming tool to correctly place the sections in the microcontroller's memory,
-          ensuring proper execution of the code
+        ensuring proper execution of the code
 
     */
 
@@ -73,28 +76,30 @@ SECTIONS
     } > FLASH
 
 
-  /* Constant data will go into FLASH */
-   .rodata :
-   {
+    /* Constant data will go into FLASH */
+    .rodata :
+    {
         . = ALIGN(4);
         *(.rodata)
         *(.rodata*)
         . = ALIGN(4);
-   } > FLASH
+    } > FLASH
 
-  /* Define the stack at the top of RAM */
-  .stack (NOLOAD):
-  {
-        /* This section is used to define the stack region */
-        . = _end_of_stack;
-        . = ALIGN(4);
-        . = . + _min_stack_size;
-        _start_of_stack = .;
-  } > RAM
+    /* Define the stack at the botton of RAM */
+    .stack (NOLOAD) :
+    {
+        . = _stack_guard;             /* Set start of stack guard */
+        KEEP(*(.stack_guard));        /* Keep the Stack Guard at the start of the section */
+        . = ALIGN(4);                  /* Align to 4 bytes */
+        _stack_min = .;               /* Mark the minimum stack address */
+        . = . + (_min_stack_size - _stack_guard_size);   /* Allocate stack size minus guard */
+        . = ALIGN(4);                  /* Align to 4 bytes */
+        _start_of_stack = .;           /* Mark the start of the stack */
+    } > RAM
 
-   /* Initialized data will be in FLASH and it will also be in RAM during runtime*/
-   .data :
-   {
+    /* Initialized data will be in FLASH and it will also be in RAM during runtime*/
+    .data :
+    {
         // This section is used to define the initialized data
         _sidata = LOADADDR(.data); /* This returns the FLASH Load Memory Address (LMA) */
         . = ALIGN(4);
@@ -103,30 +108,29 @@ SECTIONS
         *(.data*)
         . = ALIGN(4);
         _edata = .;
-   } > RAM AT> FLASH
+    } > RAM AT> FLASH
 
-
-   /* un-initialized data will be RAM */
-   .bss :
-   {
+    /* un-initialized data will be RAM */
+    .bss :
+    {
         . = ALIGN(4);
         _sbss = .;  /* start of bss section in RAM (VMA) */
         *(.bss)
         *(.bss*)
         . = ALIGN(4);
         _ebss = .;
-   } > RAM
+    } > RAM
 
-  /* Define the start of the heap */
-  .heap (NOLOAD):
-  {
+    /* Define the start of the heap */
+    .heap (NOLOAD):
+    {
         /* This section is used to define the heap region */
         . = ALIGN(4);
         _heap_start = .;
         __fill_start__ = _heap_start;
         . = _heap_end;
         __fill_end__ = _heap_end;
-  } > RAM
+    } > RAM
 
 }
 

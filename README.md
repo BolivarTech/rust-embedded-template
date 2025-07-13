@@ -25,8 +25,19 @@ to prevent stack overflow issues, because the stack is allocated at the beginnin
 stack grows too large, it will reach the lowe RAM address, and if try to write bellow that address, it will cause an 
 application panic and trigger the *HardFault_Handler*.
 
-This estragy is implemented in the linker script [linker_low_stack.ld](./linker_low_stack.ld) and in the 
+This strategy is implemented in the linker script [linker_low_stack.ld](./linker_low_stack.ld) and in the 
 [startup_stm32g431.rs](./src/startup_stm32g431.rs) file.  
+
+## Stack Guard
+
+This template includes a stack guard mechanism to help detect and prevent stack overflows, which are critical in 
+embedded systems. The stack guard is implemented by reserving a specific memory region at the end of the stack in the
+linker script (`linker_low_stack.ld`). If the stack pointer exceeds this region (due to excessive stack usage), a 
+memory access violation occurs and the function `stack_guard_corrupted()` will return TRUE; providing to the system 
+a mechanism to catch stack overflows early and handle them gracefully, rather than causing unpredictable behaviors.
+
+The stack guard setup is coordinated between the linker script and the startup code (`src/startup_stm32g431.rs`), 
+ensuring that the stack does not overwrite critical memory regions.
 
 ## Usage
 

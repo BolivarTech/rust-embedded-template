@@ -13,8 +13,9 @@ rustflags = [
     "-C", "link-arg=-Tlinker_low_stack.ld",  # Linker script
     "-C", "link-arg=-Map=output.map", # Map file for debugging
     "-C", "link-arg=-L./lib", # Additional library path
-    # Add debug info
-    # "-C", "debuginfo=2"
+    # "-C", "debuginfo=2", # Add debug info
+    "-C", "link-arg=--verbose"  # Enable verbose output from linker
+
 ]
 #runner = "probe-rs run --chip STM32G431R8"   # Block device runner becuase it goes to Debugger Console
 #runner = "probe-rs download --chip STM32G431R8" # Just download the binary without running, J-link GDB server can be used for debugging
