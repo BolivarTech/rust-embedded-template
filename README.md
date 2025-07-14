@@ -3,6 +3,9 @@
 This project provides a minimal template for starting a `#![no_std]` Rust embedded application. It is designed to be a
 starting point for bare-metal or embedded development without the Rust standard library.
 
+On this template you can incorporate and use standard embedded libraries like `embedded-hal`, `cortex-m`, and `cortex-m-rt`
+and include external C/C++ source files if needed and use it with the Foreign Function Interface (FFI).
+
 ## Directory and Files Structures
 
 ├── cpp_src/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Optional C/C++ source files (if needed)  

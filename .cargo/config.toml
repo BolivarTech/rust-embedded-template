@@ -8,14 +8,19 @@ build-std = ["core"]
 #runner = "probe-rs run --chip STM32G431R8"
 
 [target.thumbv7em-none-eabihf]
-#linker = "arm-none-eabi-ld"  # Uncomment if you want to use a custom linker
+linker = "arm-none-eabi-gcc"  # Uncomment if you want to use a custom linker
 rustflags = [
-    "-C", "link-arg=-Tlinker_low_stack.ld",  # Linker script
-    "-C", "link-arg=-Map=output.map", # Map file for debugging
-    "-C", "link-arg=-L./lib", # Additional library path
-    # "-C", "debuginfo=2", # Add debug info
-    "-C", "link-arg=--verbose"  # Enable verbose output from linker
-
+    # "-C", "link-arg=-Tlinker_low_stack.ld",  # Linker script Custom linker script
+    "-C", "link-arg=-Tcpp_src/cpp-example-code/STM32G431RBTX_FLASH.ld",  # Linker script
+    # "-C", "link-arg=-Map=output.map",        # Map file for debugging (rust linker)
+    "-C", "link-arg=-Wl,-Map=memory.map",        # Map file for debugging (arm-none-eabi-gcc)
+    #"-C", "link-arg=-L./lib",                # Additional library path
+    # "-C", "debuginfo=2",                   # Add debug info
+    "-C", "link-arg=-mcpu=cortex-m4",        # Specify the CPU architecture
+    "-C", "link-arg=-mthumb",                # Specify the instruction set
+    "-C", "link-arg=-mfpu=fpv4-sp-d16",      # Specify the FPU
+    "-C", "link-arg=-mfloat-abi=hard",       # Specify the floating-point ABI
+    "-C", "link-arg=-v"                      # Enable verbose output from linker
 ]
 #runner = "probe-rs run --chip STM32G431R8"   # Block device runner becuase it goes to Debugger Console
 #runner = "probe-rs download --chip STM32G431R8" # Just download the binary without running, J-link GDB server can be used for debugging

@@ -5,10 +5,13 @@ edition = "2021"
 
 
 [dependencies]
+#panic-halt = "0.2"  # Panic handler that halts the system
 defmt = "1.0"
 defmt-rtt = "1.0"
 panic-probe = { version = "1.0", features = ["print-defmt"] }
 
+[build-dependencies]
+cc = "1.2"  # For building C/C++ code if needed
 
 [profile.gdb]
 inherits = "dev"

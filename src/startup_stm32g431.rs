@@ -80,7 +80,7 @@ extern "C" fn Reset_Handler() {
         }
 
     }
-    crate::main(); // Call the main function defined in main.rs
+    crate::main(); // Call the main function defined in main
 }
 #[no_mangle]
 extern "C" fn Default_Handler() { loop {} }

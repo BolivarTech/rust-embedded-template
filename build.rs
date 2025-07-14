@@ -1,0 +1,151 @@
+//! # build.rs
+//!
+//! This build script is responsible for configuring and compiling C, C++, and assembly source files
+//! for the STM32 firmware project using the `cc` crate. It sets up the cross-compiler, adds source
+//! and header files, defines macros, sets compiler and linker flags, and ensures Cargo tracks all
+//! relevant files for changes. The script is tailored for building STM32 firmware components and
+//! integrates the generated object files into the Rust build process, but is can be easy addapted
+//! to be used on other vendors MCUs.
+//!
+//! Author: Julian Bolivar
+//! Version: 1.0.0
+//! Date: 2025-07-14
+use std::fs;
+use std::{env};
+
+
+/// Adds all `.c`, `.cpp`, `.s`, and `.asm` files from the given source path to the provided
+/// `cc::Build` builder for compilation.
+///
+/// # Arguments
+///
+/// * `builder` - A mutable reference to a `cc::Build` instance used for compiling C/C++ files.
+/// * `src_path` - The path to the directory or file containing the C/C++/assembly source files.
+///
+/// # Details
+///
+/// This function checks if the given `src_path` is a file or directory. If it is a file and has a
+/// supported extension, it is added to the build. If it is a directory, all files with supported
+/// extensions in that directory are added to the build process. Supported extensions are `.c`,
+/// `.cpp`, `.s`, and `.asm`.
+fn add_source_files(builder: &mut cc::Build, src_path: &str) {
+    let metadata = fs::metadata(src_path).expect(&format!("can not access {}", src_path));
+    if metadata.is_file() {
+        let path = std::path::Path::new(src_path);
+        if matches!(path.extension().and_then(|s| s.to_str()), Some("c") | Some("cpp") | Some("s") | Some("asm")) {
+            println!("Compiling {:?}", path);
+            println!("cargo::rerun-if-changed={}", path.display());
+            builder.file(&path);
+        }
+    } else if metadata.is_dir() {
+        for entry in fs::read_dir(src_path).expect(&format!("can not read {} folder", src_path)) {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                add_source_files(builder, path.to_str().unwrap());
+            } else if matches!(path.extension().and_then(|s| s.to_str()), Some("c") | Some("cpp") | Some("s") | Some("asm")) {
+                println!("Compiling {:?}", path);
+                println!("cargo::rerun-if-changed={}", path.display());
+                builder.file(&path);
+            }
+        }
+    }
+}
+
+
+/// The main entry point for the build script.
+///
+/// This function configures and compiles C/C++ source files for the project using the `cc` crate.
+/// It sets up the cross-compiler, includes source and header files, defines macros, adds assembly files,
+/// sets compiler flags, and passes linker arguments to Cargo. The script is tailored for building
+/// STM32 firmware components and ensures that all relevant files are tracked for changes.
+fn main() {
+    // Ensure the OUT_DIR environment variable is set by Cargo
+    let out_dir = env::var("OUT_DIR").expect("OUT_DIR not set by Cargo");
+    println!("cargo:rustc-link-search=native={}", out_dir);
+
+    // Create a new cc::Build instance
+    let mut builder: cc::Build = cc::Build::new();
+
+    //1. set the cross compiler
+    builder.compiler("arm-none-eabi-gcc");
+
+    //2. Add all .c, .cpp, .s and .asm files from the specified directories
+    let src_paths = [
+        "cpp_src/cpp-example-code/Core",
+        "cpp_src/cpp-example-code/Drivers"
+    ];
+    for src_path in src_paths.iter() {
+        add_source_files(&mut builder, src_path);
+    }
+
+    //3. Add all C/C++ include files (.h files)
+    let include_paths = [
+        "cpp_src/cpp-example-code/Core/Inc",
+        "cpp_src/cpp-example-code/Drivers/STM32G4xx_HAL_Driver/Inc",
+        "cpp_src/cpp-example-code/Drivers/STM32G4xx_HAL_Driver/Inc/Legacy",
+        "cpp_src/cpp-example-code/Drivers/BSP/STM32G4xx_Nucleo",
+        "cpp_src/cpp-example-code/Drivers/CMSIS/Device/ST/STM32G4xx/Include",
+        "cpp_src/cpp-example-code/Drivers/CMSIS/Include"
+    ];
+    for include_path in include_paths.iter() {
+        builder.include(include_path);
+        println!("cargo:rerun-if-changed={}", include_path);
+    }
+
+    //4. Add Define macros, -D (optional)
+    let defines = [
+        "DEBUG",
+        "USE_NUCLEO_64",
+        "USE_HAL_DRIVER",
+        "STM32G431xx"
+    ];
+    for define in defines.iter() {
+        builder.define(define, None);
+    }
+
+    //5. Add compiler flags
+    let compiler_flags = [
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-g3",
+        "-O0",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-Wall",
+        "-fstack-usage",
+        "-fcyclomatic-complexity"
+    ];
+    for flag in compiler_flags.iter() {
+        builder.flag(flag);
+    }
+
+    //6 . Add linker flags
+    let linker_flags = [
+        "--specs=nano.specs",
+        "--specs=nosys.specs",
+        "-Wl,--gc-sections",
+        "-Wl,-v",
+    ];
+    for flag in linker_flags.iter() {
+        println!("cargo:rustc-link-arg={}", flag);
+    }
+
+    //7. generate object files for C files
+    // builder.compile("stm32_c_drivers");
+    let object_files = builder.compile_intermediates();
+
+    //8. this tells the cargo to pass each object file directly to the linker
+    for obj_file in &object_files {
+        println!("cargo:rustc-link-arg={}", obj_file.display());
+    }
+
+    //8.b this is an alternative way to pass the object files to the linker as a static library
+    //builder.compile("stm32_c_drivers");
+
+    //8.c informs Cargo to pass -lstm32_c_drivers to the linker, which makes the linker look for
+    // libstm32_c_drivers.a and link it.
+    //println!("cargo:rustc-link-lib=static=stm32_c_drivers");
+}
