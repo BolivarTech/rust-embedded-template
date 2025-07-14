@@ -12,7 +12,7 @@ const LED_GREEN: u32 = 0;
 
 extern "C" {
     fn c_main_init();
-    fn HAL_Delay(delay: u32);
+    fn HAL_Delay(delay: ffi::c_uint);
     fn BSP_LED_Toggle(led: ffi::c_uint) -> ffi::c_int;
 }
 
