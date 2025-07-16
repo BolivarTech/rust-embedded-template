@@ -30,7 +30,7 @@ extern "C" fn main() -> ! {
     loop{
         unsafe {
             _ = BSP_LED_Toggle(LED_GREEN);
-            HAL_Delay(1000); // Delay 1000 milliseconds
+            HAL_Delay(500); // Delay 500 milliseconds
         }
     }
 }

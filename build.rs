@@ -61,13 +61,16 @@ fn add_source_files(builder: &mut cc::Build, src_path: &str) {
 fn main() {
     // Ensure the OUT_DIR environment variable is set by Cargo
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR not set by Cargo");
+    // Set the cross-compiler for the ARM architecture with hard-float ABI
+    env::set_var("CC_arm-none-eabi", "C:\\Program Files (x86)\\Arm GNU Toolchain \
+                 arm-none-eabi\\14.3 rel1\\bin\\arm-none-eabi-gcc");
     println!("cargo:rustc-link-search=native={}", out_dir);
 
     // Create a new cc::Build instance
     let mut builder: cc::Build = cc::Build::new();
 
     //1. set the cross compiler
-    builder.compiler("arm-none-eabi-gcc");
+    builder.compiler(env::var("CC_arm-none-eabi").unwrap());
 
     //2. Add all .c, .cpp, .s and .asm files from the specified directories
     let src_paths = [
@@ -116,7 +119,7 @@ fn main() {
         "-fdata-sections",
         "-Wall",
         "-fstack-usage",
-        "-fcyclomatic-complexity"
+        //"-fcyclomatic-complexity"   // Flag not supported by the original compiler ARM 14.3
     ];
     for flag in compiler_flags.iter() {
         builder.flag(flag);

@@ -65,20 +65,38 @@ def run_command(args_parser):
         args_parser.print_help()
         sys.exit(1)
     path = os.path.join(".", args.path_elf)
+    path_hex = os.path.join(".", args.path_elf + ".hex")
+    path_bin = os.path.join(".", args.path_elf + ".bin")
+    path_elf = os.path.join(".", args.path_elf if args.path_elf.endswith(".elf") else args.path_elf + ".elf")
+    #os.rename(args.path_elf, path_elf)
     chip = args.chip
-    print(f"Flashing {path} to {chip}")
+    print(f"Flashing {path_elf} to {chip}")
     commands = [
         ["cargo", "clean"],
         ["probe-rs", "erase", "--chip", chip],
         ["cargo", "build", "--profile", "gdb"],
-        ["probe-rs", "download", "--chip", chip, path]
+        ["arm-none-eabi-objcopy", "-O", "ihex", path_elf, path_hex],
+        ["arm-none-eabi-objcopy", "-O", "binary", path_elf, path_bin],
+        ["probe-rs", "download", "--chip", chip, path_elf]
     ]
-
+    probe_test = ["probe-rs", "list"]
+    result = subprocess.run(probe_test, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    probe_detected = True
+    if result.returncode != 0 or "No debug probes were found" in result.stdout.decode():
+        print("No debug probes were found")
+        probe_detected = False
     for cmd in commands:
-        result = subprocess.run(cmd)
+        if not probe_detected and cmd[0] == "probe-rs":
+            print(f"Skipping command: {' '.join(cmd)} as no debug probe was detected.")
+            continue
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if result.returncode != 0:
+            print(f"Error executing command: {' '.join(cmd)}")
             sys.exit(result.returncode)
-
+        else:
+            if cmd[0] == "cargo" and cmd[1] == "build":
+                os.rename(path, path_elf)
+    print(f"Flashing was successfully to {chip}")
 
 
 if __name__ == "__main__":
