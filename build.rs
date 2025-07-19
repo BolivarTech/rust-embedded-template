@@ -52,6 +52,45 @@ fn add_source_files(builder: &mut cc::Build, src_path: &str) {
 }
 
 
+///
+/// Adds all native static library files (`.a` files) from the given source path for linking.
+///
+/// # Arguments
+///
+/// * `src_path` - The path to the directory or file containing the native static library files.
+///
+/// # Details
+///
+/// This function checks if the given `src_path` is a file or directory. If it is a file and has a
+/// `.a` extension, it prints the appropriate Cargo instruction to link the static library. If it is
+/// a directory, all `.a` files in that directory are processed similarly. This allows integration of
+/// prebuilt native libraries into the Rust build process.
+///
+fn add_native_lib_files(src_path: &str) {
+    let metadata = fs::metadata(src_path).expect(&format!("can not access {}", src_path));
+    if metadata.is_file() {
+        let path = std::path::Path::new(src_path);
+        if matches!(path.extension().and_then(|s| s.to_str()), Some("a") ) {
+            let file_stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("error:native-lib");
+            let lib_name = file_stem.trim_start_matches("lib");
+            println!("cargo:rustc-link-lib=static={}", lib_name);
+        }
+    }
+    else if metadata.is_dir() {
+        for entry in fs::read_dir(src_path).expect(&format!("can not read {} folder", src_path)) {
+            let path = entry.unwrap().path();
+            if !path.is_dir() {
+                if matches!(path.extension().and_then(|s| s.to_str()), Some("a") ) {
+                    let file_stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("error:native-lib");
+                    let lib_name = file_stem.trim_start_matches("lib");
+                    println!("cargo:rustc-link-lib=static={}", lib_name);
+                }
+            }
+        }
+    }
+}
+
+
 /// The main entry point for the build script.
 ///
 /// This function configures and compiles C/C++ source files for the project using the `cc` crate.
@@ -99,6 +138,20 @@ fn main() {
         println!("cargo:rerun-if-changed={}", include_path);
     }
 
+    // Include native static libraries
+    let lib_paths: [&str; 0] = [
+        //"C:\\Program Files (x86)\\Arm GNU Toolchain arm-none-eabi\\14.3 rel1\\arm-none-eabi\\lib",
+        //"C:\\Program Files (x86)\\Arm GNU Toolchain arm-none-eabi\\14.3 rel1\\arm-none-eabi\\lib\\arm\\v5te\\hard"
+        //"C:\\ST\\STM32CubeCLT_1.18.0\\GNU-tools-for-STM32\\arm-none-eabi\\lib"
+        //"C:\\ST\\STM32CubeCLT_1.18.0\\GNU-tools-for-STM32\\arm-none-eabi\\lib\\arm\\v5te\\hard"
+    ];
+    if !lib_paths.is_empty() {
+        for lib_path in lib_paths.iter() {
+            println!("cargo:rustc-link-search=native={}", lib_path);
+            add_native_lib_files(lib_path);
+        }
+    }
+
     //4. Add Define macros, -D (optional)
     let defines = [
         "DEBUG",
@@ -131,10 +184,11 @@ fn main() {
 
     //6 . Add linker flags
     let linker_flags = [
-        "--specs=nano.specs",
+        //"-nostdlib",
+        //"--specs=nano.specs",
         "--specs=nosys.specs",
         "-Wl,--gc-sections",
-        "-Wl,-v",
+        "-Wl,-v"
     ];
     for flag in linker_flags.iter() {
         println!("cargo:rustc-link-arg={}", flag);

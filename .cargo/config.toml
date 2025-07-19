@@ -14,7 +14,7 @@ linker = "C:\\Program Files (x86)\\Arm GNU Toolchain arm-none-eabi\\14.3 rel1\\b
 rustflags = [
     # "-C", "link-arg=-Tlinker_low_stack.ld",  # Linker script Custom linker script
     "-C", "link-arg=-Tcpp_src/cpp-example-code/STM32G431RBTX_FLASH.ld",  # Linker script
-    # "-C", "link-arg=-nostdlib",
+    #"-C", "link-arg=-nostdlib",
     # "-C", "link-arg=-Map=output.map",        # Map file for debugging (rust linker)
     "-C", "link-arg=-Wl,-Map=memory.map",        # Map file for debugging (arm-none-eabi-gcc)
     #"-C", "link-arg=-L./lib",                # Additional library path

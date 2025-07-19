@@ -3,9 +3,7 @@
 
 use core::panic::PanicInfo;
 use core::ffi;
-//use rtt_target::{debug_rtt_init_print, debug_rprintln};
-
-
+use cortex_m::{Peripherals, iprintln};
 
 //use panic_halt as _; // Use panic_halt crate for minimal panic handler
 
@@ -24,14 +22,20 @@ extern "C" {
 /// If the stack guard is corrupted, the loop breaks.
 #[no_mangle]
 extern "C" fn main() -> ! {
+    let mut cp = Peripherals::take().unwrap();
+    let stim = &mut cp.ITM.stim[0];
+
     unsafe {
         c_main_init();
     }
-//    debug_rtt_init_print!(); // nop in --release
+
+
     loop{
         unsafe {
             _ = BSP_LED_Toggle(LED_GREEN);
-//            debug_rprintln!("LED toggled"); // not present in --release
+            iprintln!(stim, "Hello from ITM!");
+
+  //          rprintln!("LED toggled"); // not present in --release
             HAL_Delay(500); // Delay 500 milliseconds
         }
     }
