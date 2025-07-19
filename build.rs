@@ -63,14 +63,18 @@ fn main() {
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR not set by Cargo");
     // Set the cross-compiler for the ARM architecture with hard-float ABI
     env::set_var("CC_arm-none-eabi", "C:\\Program Files (x86)\\Arm GNU Toolchain \
-                 arm-none-eabi\\14.3 rel1\\bin\\arm-none-eabi-gcc");
+                 arm-none-eabi\\14.3 rel1\\bin\\arm-none-eabi-gcc");  // Set the path to the ARM GCC compiler
+    //env::set_var("CC_arm-none-eabi", "C:\\ST\\STM32CubeCLT_1.18.0\\GNU-tools-for-STM32\
+    //             \\bin\\arm-none-eabi-gcc.exe");   // Set the path to the STM32 ARM GCC compiler
+    //env::set_var("CC_arm-none-eabi","arm-none-eabi-gcc"); // Set the first in PATH ARM GCC compiler found
     println!("cargo:rustc-link-search=native={}", out_dir);
 
     // Create a new cc::Build instance
     let mut builder: cc::Build = cc::Build::new();
 
     //1. set the cross compiler
-    builder.compiler(env::var("CC_arm-none-eabi").unwrap());
+    //builder.compiler(env::var("CC_arm-none-eabi").unwrap());
+    builder.compiler("arm-none-eabi-gcc");
 
     //2. Add all .c, .cpp, .s and .asm files from the specified directories
     let src_paths = [
@@ -146,6 +150,11 @@ fn main() {
     }
 
     //8.b this is an alternative way to pass the object files to the linker as a static library
+    //     NOTE: This can produce issues with weak symbols, and interrupt handlers are not replaced
+    //            by the strong symbols, and default handlers are used instead.
+    //            You can verify this by checking using the `cargo nm` command, that will show
+    //            the 'w' flag and not the 'T' flag to indicate that the strong implementation was
+    //            linked.
     //builder.compile("stm32_c_drivers");
 
     //8.c informs Cargo to pass -lstm32_c_drivers to the linker, which makes the linker look for

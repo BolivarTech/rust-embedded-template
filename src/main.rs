@@ -3,6 +3,7 @@
 
 use core::panic::PanicInfo;
 use core::ffi;
+//use rtt_target::{debug_rtt_init_print, debug_rprintln};
 
 
 
@@ -26,10 +27,11 @@ extern "C" fn main() -> ! {
     unsafe {
         c_main_init();
     }
-
+//    debug_rtt_init_print!(); // nop in --release
     loop{
         unsafe {
             _ = BSP_LED_Toggle(LED_GREEN);
+//            debug_rprintln!("LED toggled"); // not present in --release
             HAL_Delay(500); // Delay 500 milliseconds
         }
     }

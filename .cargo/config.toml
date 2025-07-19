@@ -8,11 +8,13 @@ build-std = ["core"]
 #runner = "probe-rs run --chip STM32G431R8"
 
 [target.thumbv7em-none-eabihf]
-linker = "C:\\Program Files (x86)\\Arm GNU Toolchain arm-none-eabi\\14.3 rel1\\bin\\arm-none-eabi-gcc.exe"  # Uncomment if you want to use a custom linker
-#linker = "arm-none-eabi-gcc"  # Uncomment if you want to use a custom linker
+linker = "C:\\Program Files (x86)\\Arm GNU Toolchain arm-none-eabi\\14.3 rel1\\bin\\arm-none-eabi-gcc.exe"  # Uncomment if you want to use the ARM GNU Toolchain linker
+#linker = "C:\\ST\\STM32CubeCLT_1.18.0\\GNU-tools-for-STM32\\bin\\arm-none-eabi-gcc.exe"  # Uncomment if you want to use the STM32CubeCLT GNU Toolchain linker
+#linker = "arm-none-eabi-gcc"  # Uncomment if you want to use the first arm-none-eabi-gcc in your PATH
 rustflags = [
     # "-C", "link-arg=-Tlinker_low_stack.ld",  # Linker script Custom linker script
     "-C", "link-arg=-Tcpp_src/cpp-example-code/STM32G431RBTX_FLASH.ld",  # Linker script
+    # "-C", "link-arg=-nostdlib",
     # "-C", "link-arg=-Map=output.map",        # Map file for debugging (rust linker)
     "-C", "link-arg=-Wl,-Map=memory.map",        # Map file for debugging (arm-none-eabi-gcc)
     #"-C", "link-arg=-L./lib",                # Additional library path
@@ -21,7 +23,8 @@ rustflags = [
     "-C", "link-arg=-mthumb",                # Specify the instruction set
     "-C", "link-arg=-mfpu=fpv4-sp-d16",      # Specify the FPU
     "-C", "link-arg=-mfloat-abi=hard",       # Specify the floating-point ABI
-    "-C", "link-arg=-v"                      # Enable verbose output from linker
+    # "-C", "link-arg=-v",                     # Enable verbose output from linker (STM Version)
+    "-C", "link-arg=-Wl,--verbose"            # Enable verbose output from linker (arm-none-eabi-gcc)
 ]
 #runner = "probe-rs run --chip STM32G431R8"   # Block device runner becuase it goes to Debugger Console
 #runner = "probe-rs download --chip STM32G431R8" # Just download the binary without running, J-link GDB server can be used for debugging
