@@ -1,7 +1,5 @@
 # Rust Embedded Template
 
-The selected paragraphs contain some grammatical errors and awkward phrasing. Here is a corrected version:
-
 This project provides a minimal template for starting a `#![no_std]` Rust embedded application. It is designed to be a 
 starting point for bare-metal or embedded development without the Rust standard library.
 
