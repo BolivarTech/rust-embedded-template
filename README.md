@@ -1,16 +1,24 @@
 # Rust Embedded Template
 
-This project provides a minimal template for starting a `#![no_std]` Rust embedded application. It is designed to be a
+The selected paragraphs contain some grammatical errors and awkward phrasing. Here is a corrected version:
+
+This project provides a minimal template for starting a `#![no_std]` Rust embedded application. It is designed to be a 
 starting point for bare-metal or embedded development without the Rust standard library.
 
-On this template you can incorporate and use standard embedded libraries like `embedded-hal`, `cortex-m`, and `cortex-m-rt`
-and include external C/C++ source files if needed and use it with the Foreign Function Interface (FFI).
+This template is intended for creating embedded applications using Rust in a bare-metal environment on an MCU where no 
+crate exists that implements the HAL (Hardware Abstraction Layer) for your specific microcontroller. Due to time 
+constraints, you may not have time to implement your own HAL, so this template allows you to use existing C/C++ HALs 
+through the Foreign Function Interface (FFI).
+
+With this template, you can also incorporate and use standard embedded libraries like `embedded-hal`, `cortex-m`, and 
+`cortex-m-rt`, and include external C/C++ source files if needed, using the Foreign Function Interface (FFI).
 
 ## Directory and Files Structures
 
 ├── cpp_src/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Optional C/C++ source files (if needed)  
 ├── src/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Rust source files  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── main.rs&nbsp;&nbsp;&nbsp;&nbsp;# Main entry point with custom _start function and panic handler  
+├── doc/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Template documentation   
 ├── Cargo.toml&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Project configuration and dependencies  
 ├── README.md&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# This file  
 └── LICENSE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# MIT License file  
@@ -87,6 +95,12 @@ make modifications before starting your own project.
 
 For more detailed information on how to set up and use this template, refer to the [How-to Guide](doc/howto_detailed_setup.md).
 
+Additional documentation can be found in the [How to C/C++ FFI](doc/how_to_cpp_ffi.md) guide, which explains how to 
+interface Rust with C/C++ code using the Foreign Function Interface (FFI).
+
+the [How to SVD2Rust to PAC](doc/how_to_svd2rust_to_PAC.md) guide, which explains how to generate a Peripheral Access 
+Crate (PAC) from SVD files and use it in your Rust embedded application.
+
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE.md) file for details.
