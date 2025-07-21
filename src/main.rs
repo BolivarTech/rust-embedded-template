@@ -66,7 +66,7 @@ fn panic(_info: &PanicInfo) -> ! {
 /// Toggles the delay value between 500ms and 1000ms when the user button (ID 0) is pressed.
 #[no_mangle]
 #[allow(non_snake_case)]
-fn BSP_PB_Callback(Button: ffi::c_uint) {
+pub extern "C" fn BSP_PB_Callback(Button: ffi::c_uint) {
     unsafe {
         if Button == 0 { // Assuming 0 is the button ID for the user button
             DELAY_VALUE = if DELAY_VALUE == 500 { 1000 } else { 500 }; // Toggle delay between 500ms and 1000ms
