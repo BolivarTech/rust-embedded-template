@@ -5,23 +5,38 @@ flasher.py
 
 Automates building, erasing, and flashing firmware to a microcontroller using Cargo and probe-rs.
 
-Usage:
+## Usage
+
     python flasher.py [-c CHIP] <path_to_elf>
 
-Arguments:
-    -c, --chip      Specify the chip type (default: STM32G431R8)
-    path_to_elf     Path to the ELF binary to be flashed
+### Arguments
 
-This script:
-    - Cleans the Cargo project
-    - Erases the microcontroller flash
-    - Builds the firmware with the 'gdb' profile
-    - Downloads the firmware to the microcontroller
+- `-c`, `--chip`      Specify the chip type (default: STM32G431R8)
+- `path_to_elf`       Path to the ELF binary to be flashed
 
-Dependencies:
-    - Python 3.x
-    - cargo
-    - probe-rs
+### Features
+
+- Cleans the Cargo project
+- Erases the microcontroller flash
+- Builds the firmware with the 'gdb' profile
+- Converts the ELF to HEX and BIN formats
+- Downloads the firmware to the microcontroller
+
+### Supported Debug Probes
+
+- J-Link (via probe-rs)
+- ST-Link (via probe-rs)
+- Black Magic Probe (via arm-none-eabi-gdb)
+
+### Dependencies
+
+- Python 3.x
+- cargo
+- probe-rs
+- arm-none-eabi-objcopy
+- arm-none-eabi-gdb (for Black Magic Probe)
+
+---
 
 Author: Julian Bolivar
 Date: 2025-07-12
@@ -32,6 +47,26 @@ import os
 import subprocess
 import sys
 from argparse import ArgumentParser
+import re
+
+# Define the commands to be executed for different debug probes trough probe-rs
+commands_probe_rs = [
+    ["cargo", "clean"],
+    ["probe-rs", "erase", "--chip", 'chip_id'],
+    ["cargo", "build", "--profile", "gdb"],
+    ["arm-none-eabi-objcopy", "-O", "ihex", 'path_elf', 'path_hex'],
+    ["arm-none-eabi-objcopy", "-O", "binary", 'path_elf', 'path_bin'],
+    ["probe-rs", "download", "--chip", 'chip_id', 'path_elf']
+]
+
+# Define the commands to be executed for Black Magic Probe
+commands_bmp = [
+    ["cargo", "clean"],
+    ["cargo", "build", "--profile", "gdb"],
+    ["arm-none-eabi-objcopy", "-O", "ihex", 'path_elf', 'path_hex'],
+    ["arm-none-eabi-objcopy", "-O", "binary", 'path_elf', 'path_bin'],
+    ["arm-none-eabi-gdb", "-nx", "--batch", "-ex", "target extended-remote com_p", "-x", "black_magic_probe_flash.scr", 'path_elf']
+]
 
 def build_argparser():
     """
@@ -70,21 +105,31 @@ def run_command(args_parser):
     path_elf = os.path.join(".", args.path_elf if args.path_elf.endswith(".elf") else args.path_elf + ".elf")
     #os.rename(args.path_elf, path_elf)
     chip = args.chip
+    com_port = 'COM1'  # Default COM port
     print(f"Flashing {path_elf} to {chip}")
-    commands = [
-        ["cargo", "clean"],
-        ["probe-rs", "erase", "--chip", chip],
-        ["cargo", "build", "--profile", "gdb"],
-        ["arm-none-eabi-objcopy", "-O", "ihex", path_elf, path_hex],
-        ["arm-none-eabi-objcopy", "-O", "binary", path_elf, path_bin],
-        ["probe-rs", "download", "--chip", chip, path_elf]
-    ]
+    # Check if probe-rs can detect a debug probe
     probe_test = ["probe-rs", "list"]
     result = subprocess.run(probe_test, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     probe_detected = True
-    if result.returncode != 0 or "No debug probes were found" in result.stdout.decode():
+    if result.returncode == 0 and "J-Link" in result.stdout.decode():
+        print("J-Link debug probe detected")
+        commands = commands_probe_rs
+    elif result.returncode == 0 and "STLink" in result.stdout.decode():
+        print("ST-Link debug probe detected")
+        commands = commands_probe_rs
+    elif result.returncode == 0 and "Black Magic Probe" in result.stdout.decode():
+        commands = commands_bmp
+        com_match = re.search(r'COM\d+', result.stdout.decode())
+        if com_match:
+            com_port = com_match.group(0)
+        print(f"Black Magic Probe debug probe detected in {com_port}")
+    elif result.returncode != 0 or "No debug probes were found" in result.stdout.decode():
         print("No debug probes were found")
+        commands = commands_probe_rs  # Default to probe-rs commands
         probe_detected = False
+    commands = [list(
+        map(lambda x: x.replace('chip_id', chip).replace('path_elf', path_elf).replace('path_hex', path_hex).replace(
+            'path_bin', path_bin).replace('com_p',com_port), cmd)) for cmd in commands]
     for cmd in commands:
         if not probe_detected and cmd[0] == "probe-rs":
             print(f"Skipping command: {' '.join(cmd)} as no debug probe was detected.")
