@@ -8,7 +8,8 @@ For installation instructions, see [Rust Toolchain Install Guide](https://www.ru
 
   ```bash
   rustup target install <TARGET>  # Example: rustup target install thumbv7em-none-eabihf
-  cargo install cargo-binutils cargo-generate cargo-modules probe-rs form svd-vector-gen svd2rust
+  cargo install cargo-binutils cargo-generate cargo-modules form svd-vector-gen svd2rust
+  cargo install probe-rs-tools --locked
   rustup component add llvm-tools-preview
   ```
 ## Read ELF file content
