@@ -1,7 +1,7 @@
 [template]
 cargo_generate_version = ">=0.23.0"
 exclude = [
-    "./target",
-    "cargo.lock",
-    "./cpp_src/**",
+    "cpp_src/**",
+    "target",
+    "Cargo.lock",
 ]
